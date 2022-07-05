@@ -2,18 +2,20 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
 
-
-class Admin extends Authenticatable
+class Admin extends Authenticatable implements JWTSubject
 {
     use HasApiTokens,HasFactory;
     protected $table ="admins";
-    protected $guard = 'admin';
+    
     protected $fillable = [
         'name',
         'email',
@@ -21,7 +23,14 @@ class Admin extends Authenticatable
 
     ];
 
-
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
      /*
       * Get all of the comments for the Admin
       *

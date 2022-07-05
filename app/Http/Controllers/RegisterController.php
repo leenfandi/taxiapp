@@ -1,67 +1,113 @@
 <?php
 namespace App\Http\Controllers;
-use Illuminate\Http\Request;
-use App\Http\Controllers\BaseController as BaseController;
-use App\Models\User;
-use Dotenv\Parser\Value;
-use Dotenv\Validator as DotenvValidator;
-use Validator;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
-class RegisterController extends BaseController
-{
-public function register(Request $request)
-{
-$rules =$this->getRulles();
-$validator=validator($request->all(),$rules);
-if ($validator->fails())
-{
-return $this ->sendError('validator error',$validator->errors());
-}
-$request['password']=Hash::make($request['password']);
-$input=$request->all();
-$user=User::create($input);
-$token = $user->createToken('homam')->plainTextToken;
-$success['token']=$token;
-// $success['token']=$user->createToken('homam')->accessToken;
-// $success['token']=$user->name;
-return $this->sendResponse( $success,'User Register successfully');
-}
-public function login(Request $request)
-{
-$validator = validator($request->all(),[
-'email'=>'required|email|unique:users,email',
-'password' =>'required',
-] );
-if ($validator->failed()){
-return $this ->sendError('validator error',$validator->errors());
-}
-$user = User::where('email',$request->email) -> first();
-if ($user){
-if(Hash::check($request->password , $user->password)){
-$success['token'] = $user->createToken('homam')->plainTextToken;
-return $this->sendResponse( $success,'User login successfully');
-} else {
-return $this->sendError('Check your input', ['error' => 'Password mismatch']);
-}
-}
-else {
 
-return $this->sendError('Check your input', ['error' => 'User does not exist']);
-}
-}
-public function logout(Request $request)
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
+
+class RegisterController extends Controller
 {
-$token = $request->user()->token();
-$token->revoke();
-return response()->json(['message'=>'thank you for using our app came back later']);
-}
-public function getRulles()
-{
-return $rules =[
-'name'=>'required|unique:users,name',
-'email'=>'required|email|unique:users,email',
-'password'=>'required',
-];
-}
+    protected $db_mysql;
+    public function __construct()
+    {
+        $this ->db_mysql= config('database.connections.mysql.database');
+     $this->middleware('auth:api',['except'=>['login','register']]);
+    }
+
+    public function register (Request $request)
+    {
+
+        $validator =Validator::make($request->all(),[
+            'name'=>'required',
+            'email'=>'required|string|email|unique:users',
+            'password'=>'required|min:8',
+
+        ]);
+
+        if ($validator->fails())
+        {
+            return response()->json($validator->errors()->toJson(),400);
+        }
+        $user=User::create(array_merge(
+            $validator->validated(),
+            ['password'=>bcrypt($request->password)]
+        ));
+        $credentials=$request->only(['email','password']);
+        $token=Auth::guard('api')->attempt($credentials);
+        return response()->json([
+            'message'=>'Register successfully',
+            'acces_token'=>$token
+        ],201);
+    }
+    /**
+     * Login
+     */
+    public function login(Request $request)
+    {
+     $validator =Validator::make($request->all(),[
+
+         'email'=>'required|string|email',
+         'password'=>'required|string|min:8',
+     ]);
+     if ($validator->fails())
+     {
+         return response()->json($validator->errors()->toJson(),422);
+     }
+     $credentials=$request->only(['email','password']);
+
+     if(!$token=Auth::guard('api')->attempt($credentials))
+     {
+       return response()->json(['error'=>'Unauthorized'],401);
+     }
+
+     return response()->json([
+         'access_token'=>$token,
+         'user'=>Auth::guard('api')->user(),
+
+       ]);
+    }
+    /**
+     * Get the authenticated User.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+   /* public function me()
+    {
+        return response()->json(auth()->user());
+    }
+    /**
+     * Log the user out (Invalidate the token).
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+   public function logout()
+    {
+        auth()->logout();
+
+        return response()->json(['message' => 'Successfully logged out']);
+    }
+
+    /**
+     * Refresh a token.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+   /* public function refresh()
+    {
+        return $this->respondWithToken(auth()->refresh());
+    }
+    /**
+     * Get the token array structure.
+     *
+     * @param  string $token
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+
+
+
 }

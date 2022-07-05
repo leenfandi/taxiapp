@@ -1,135 +1,108 @@
-?php
-
-namespace App\Http\Controllers;
-use App\Models\Profile;
-use Validator;
-use App\Models\Driver;
-use App\Http\Resources\Taxi as TaxiResources;
-use App\Http\Controllers\BaseController as BaseController;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
-
-use Illuminate\Http\Request;
-
-class ProfileController extends BaseController
-{
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        $user = Auth::guard('driver');
-        $id = Auth::id();
-        if ( $user->profile() == null) {
-            return $this->sendError('your profil is empty',$errormessage);
-
-        }
-
-        return $this->sendResponse(new TaxiResources($user),'user profile successfully');
-
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    /*public function store(Request $request)
-    {
-        $input= $request->all();
-        $user = Auth::guard('driver');
-        $input['driver_id']=$user->id;
-        if($request->image && $request->image->isValid())
+try{
+        $validator = Validator::make($request->all(),[
+         'name'=> 'required|min:2|max:100',
+         'email'=>'required|email',
+         'gender'=>'required',
+         'image'=>'nullable|image',
+         'typeofcar'=>'required',
+         'number'=>'required|numeric'
+        ]);
+        if ($validator->fails())
         {
+    $error = $validator->errors()->all()[0];
+    //$driver->save();
+    return response()->json(['status'=>'false','message'=>$error,'data'=>[]],422);
+    if( $request->driver_id != Auth::id())
+   {
+       return $this->sendError('you dont have rights', $errormessage);
+    }
+        }else{
+
+
+                $driver = Driver::where('id', $driver_id)->first();
+            $driver->name = $request->name;
+            $driver->email = $request->email;
+            $driver->gender = $request->gender;
+            $driver->typeofcar = $request->typeofcar;
+            $driver->number = $request->number;
+            $driver->password=$request->password;
+
+
+            if ($request->image && $request->image->isValid()){
+
             $file_extension = $request->image->extension();
             $file_name = time() . '.' . $file_extension;
             $request->image->move(public_path('images/drivers'), $file_name);
             $path = "public/images/drivers/$file_name";
-            $input['image']=$path; //$user->image = $path         $user = id
+            $driver->image = $path;
+        }
+
+       // $driver->update();
+        return response()->json(['status'=>'true','message'=>"Profile Updated",'data'=>$driver ]);
+//$driver->update();
 
         }
-        $user->update();
-    }*/
+      //  $driver->update();
+   } catch(\Exception $e){
+    return response()->json(['status'=>'false','message'=>$e->getMessage(),'data'=>[]],500);
+   }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request)
+}
+public function updateprofile( Request $request)
     {
-        $input= $request->all();
-         $validator = validator($input, [
-            'name' => 'requierd',
-            'gender' => 'requierd',
-            'typeofcar' => 'requierd',
-            'number' => 'requierd',
-             ]);
-             if ($validator->fails()) {
-                return $this->sendError('validator error', $validator->errors());
-            }
-             $user = Auth::guard('driver');
-             $input['driver_id']=$user->id;
-             if ($request->has('name')){
+try{
+    $input = $request->all();
+    $id = $request->id;
+    $driver = Driver::find($id);
+        $validator = Validator::make($input,[
+         'name'=> 'string',
+         'email'=>'string|email|unique:_drivers',
+         'gender'=>'string',
+         'image'=>'nullable|image',
+         'typeofcar'=>'string',
+         'number'=>'string|numeric'
+        ]);
+        if ($validator->fails())
+        {
+    $error = $validator->errors()->all()[0];
 
-               $user->name  =$input['name'];
-               $user->save();
-             }
-             if ($request->has('gender')){
+    return response()->json(['status'=>'false','message'=>$error,'data'=>[]],422);
 
-                $user->gender  =$input['gender'];
-                $user->save();
-              }
+        }
 
-
-              if ($request->image && $request->image->isValid()){
-
-                $file_extension = $request->image->extension();
-                $file_name = time() . '.' . $file_extension;
-                $request->image->move(public_path('images/drivers'), $file_name);
-                $path = "public/images/drivers/$file_name";
-                $user->image = $path; //       $user = id
-              }
-              $user->update();
-
-              if ($request->has('typeofcar')){
-
-                $user->typeofcar  =$input['typeofcar'];
-                $user->save();
-              }
-              if ($request->has('number')){
-
-                $user->number  =$input['number'];
-                $user->save();
-              }
-
-              return $this->sendResponse(new TaxiResources($user),'profile update successfully');
+           if($request->exists('name')){
+            $driver->name= $input['name'];
+           }
+           if($request->exists('email')){
+            $driver->name= $input['email'];
+           }
+           if($request->exists('gender')){
+            $driver->name= $input['gender'];
+           }
+           if($request->exists('typeofcar')){
+            $driver->name= $input['typeofcar'];
+           }
+           if($request->exists('number')){
+            $driver->name= $input['number'];
+           }
 
 
-    }
+            if ($request->image && $request->image->isValid()){
+
+            $file_extension = $request->image->extension();
+            $file_name = time() . '.' . $file_extension;
+            $request->image->move(public_path('images/drivers'), $file_name);
+            $path = "public/images/drivers/$file_name";
+            $driver->image = $path;
+        }
+
+        $driver->save();
+        return response()->json(['status'=>'true','message'=>"Profile Updated",'data'=>$driver ]);
+
+        }
+
+    catch(\Exception $e){
+    return response()->json(['status'=>'false','message'=>$e->getMessage(),'data'=>[]],500);
+   }
 
 }

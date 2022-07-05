@@ -8,9 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-class Driver extends Authenticatable
+use Tymon\JWTAuth\Contracts\JWTSubject;
+class Driver extends Authenticatable implements JWTSubject
 {
-    use HasApiTokens, HasFactory;
+    use HasApiTokens, HasFactory ,Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -18,7 +19,7 @@ class Driver extends Authenticatable
      * @var array<int, string>
      */
     protected $table ="_drivers";
-    protected $guard = 'driver';
+    
     protected $fillable = [
         'name',
         'email',
@@ -39,6 +40,14 @@ class Driver extends Authenticatable
         'remember_token',
 
     ];
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
   // public function profile()
    // {
      //   return $this->hasOne(Profile::class);

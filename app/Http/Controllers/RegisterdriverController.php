@@ -1,44 +1,53 @@
 <?php
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
-use App\Http\Controllers\BaseController as BaseController;
+
 use App\Models\Driver;
 use App\Models\Admin;
 use Dotenv\Parser\Value;
 use Dotenv\Validator as DotenvValidator;
 use Validator;
-use Illuminate\Support\Facades\Hash;
+
 use Illuminate\Support\Facades\Auth;
-class RegisterdriverController extends BaseController
+class RegisterdriverController extends Controller
 {
-public function register(Request $request , $admin_id)
-{
-    $admin = Admin::where('id', $admin_id)->first();
-    $drivers=Driver::with(['admin'])->where('admin_id',$admin_id);
-$rules =$this->getRulles();
-$validator=validator($request->all(),$rules);
-if ($validator->fails())
-{
-return $this ->sendError('validator error',$validator->errors());
-}
-$request['password']=Hash::make($request['password']);
-$input=$request->all();
-$user = new Driver;
-$user->name = $request->name;
-$user->email = $request->email;
-$user->password = $request->password;
-$user->gender = $request->gender;
-$user->typeofcar = $request->typeofcar;
-$user->number = $request->number;
-$user->admin_id = $admin_id;
-$user->save();
-//$user=Driver::create($input);
-$token = $user->createToken('homam')->plainTextToken;
-$success['token']=$token;
-// $success['token']=$user->createToken('homam')->accessToken;
-// $success['token']=$user->name;
-return $this->sendResponse( $success,'User Register successfully');
-}
+
+    protected $db_mysql;
+    public function __construct()
+    {
+        $this ->db_mysql= config('database.connections.mysql.database');
+
+    }
+    /**
+     * Register
+     */
+    public function register (Request $request)
+    {
+
+        $validator =Validator::make($request->all(),[
+            'name'=>'required',
+            'email'=>'required|string|email|unique:_drivers',
+            'password'=>'required|min:8',
+            'gender'=>'required',
+            'typeofcar'=>'required',
+            'number'=>'required|numeric',
+        ]);
+
+        if ($validator->fails())
+        {
+            return response()->json($validator->errors()->toJson(),400);
+        }
+        $user=Driver::create(array_merge(
+            $validator->validated(),
+            ['password'=>bcrypt($request->password)]
+        ));
+        $credentials=$request->only(['email','password']);
+        $token=Auth::guard('driver-api')->attempt($credentials);
+        return response()->json([
+            'message'=>'Register successfully',
+            'acces_token'=>$token
+        ],201);
+    }
 public function login(Request $request)
 {
 $validator = validator($request->all(),[
@@ -96,38 +105,42 @@ public function getprofile($driver_id )
     public function updateprofile( Request $request)
     {
 try{
-        $validator = Validator::make($request->all(),[
-         'name'=> 'required|min:2|max:100',
-         'email'=>'required|email',
-         'gender'=>'required',
-         'image'=>'nullable|image',
-         'typeofcar'=>'required',
-         'number'=>'required|numeric'
+    $input = $request->all();
+
+        $validator = validator($input,[
+            'name'=> 'required|min:2|max:100',
+            'email'=>'required|email',
+            'gender'=>'required',
+            'image'=>'nullable|image',
+            'typeofcar'=>'required',
+            'number'=>'required|numeric'
         ]);
         if ($validator->fails())
         {
     $error = $validator->errors()->all()[0];
-    //$driver->save();
+
     return response()->json(['status'=>'false','message'=>$error,'data'=>[]],422);
-    if( $request->driver_id != Auth::id())
-   {
-       return $this->sendError('you dont have rights', $errormessage);
-    }
-        }else{
 
-           // $driver_id = Driver::where('id')->first();
+        }
+        $id = $request->id;
+        $driver = Driver::find($id);
 
-           // $driver = Driver::where('driver_id',$driver_id);
-          // $driver = Driver::where('id')->first();
-            //if($driver){
-            $driver = new Driver();
-            $driver->name = $request->name;
-            $driver->email = $request->email;
-            $driver->gender = $request->gender;
-            $driver->typeofcar = $request->typeofcar;
-            $driver->number = $request->number;
-            $driver->password=$request->password;
-        // $driver->save();
+           if($request->exists('name')){
+            $driver->name= $input['name'];
+           }
+           if($request->exists('email')){
+            $driver->name= $input['email'];
+           }
+           if($request->exists('gender')){
+            $driver->name= $input['gender'];
+           }
+           if($request->exists('typeofcar')){
+            $driver->name= $input['typeofcar'];
+           }
+           if($request->exists('number')){
+            $driver->name= $input['number'];
+           }
+
 
             if ($request->image && $request->image->isValid()){
 
@@ -138,13 +151,12 @@ try{
             $driver->image = $path;
         }
 
-
+       $driver->save();
         return response()->json(['status'=>'true','message'=>"Profile Updated",'data'=>$driver ]);
-//$driver->update();
-        //$driver = save();
+
         }
-      //  $driver->update();
-   } catch(\Exception $e){
+
+    catch(\Exception $e){
     return response()->json(['status'=>'false','message'=>$e->getMessage(),'data'=>[]],500);
    }
 

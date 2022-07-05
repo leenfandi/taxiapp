@@ -14,7 +14,7 @@ return [
     */
 
     'defaults' => [
-        'guard' => 'web',
+        'guard' => 'api',
         'passwords' => 'users',
     ],
 
@@ -41,25 +41,23 @@ return [
             'provider' => 'users',
         ],
         'api' => [
-
-            'driver' => 'passport',
-
+            'driver' => 'jwt',
             'provider' => 'users',
-
+            'hash' => false,
         ],
-        'driver' => [
+        'driver-api' => [
 
-            'driver' => 'passport',
+            'driver' => 'jwt',
 
             'provider' => '_drivers',
-
+            'hash' => false,
         ],
-        'admin' => [
+        'admin-api' => [
 
-            'driver' => 'passport',
+            'driver' => 'jwt',
 
             'provider' => 'admins',
-
+            'hash' => false,
         ],
 
     ],
@@ -124,21 +122,9 @@ return [
             'table' => 'password_resets',
             'expire' => 60,
             'throttle' => 60,
-        ],
-        '_drivers' => [
-            'provider' => '_drivers',
-            'table' => 'password_resets',
-            'expire' => 60,
-            'throttle' => 60,
-        ],
-        'admins' => [
-            'provider' => 'admins',
-            'table' => 'password_resets',
-            'expire' => 60,
-            'throttle' => 60,
-        ],
-    ],
 
+    ],
+],
     /*
     |--------------------------------------------------------------------------
     | Password Confirmation Timeout
