@@ -19,15 +19,16 @@ class Driver extends Authenticatable implements JWTSubject
      * @var array<int, string>
      */
     protected $table ="_drivers";
-    
+
     protected $fillable = [
         'name',
         'email',
         'password',
+        'image',
         'gender',
         'typeofcar',
         'number',
-         'admin_id',
+      //  'admin_id',
 
     ];
 
@@ -62,7 +63,7 @@ class Driver extends Authenticatable implements JWTSubject
         return $this->hasMany(Comment::class);
     }
 
-    public function admin(){
-       return  $this->belongsTo(Admin::class,'admin_id');
-       }
+  // public function admin(){
+     // return  $this->belongsTo(Admin::class,'admin_id');
+     //  }
 }

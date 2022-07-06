@@ -6,6 +6,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\CustomAuthController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\RegisterdriverController;
+use App\Http\Controllers\AdminAddedController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,17 +24,13 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 
 });
-//Route::post('register','RegisterController@register');
-Route::post('login','RegisterController@login');
-Route::middleware('auth:api')->post('logout','RegisterController@logout');
+
 
 
 Route::post('drivers/{driver_id}/comments/store','CommentController@store');
     Route::get('drivers/{driver_id}/comments','CommentController@list');
 
-   // Route::post('register/driver/{admin_id}','RegisterdriverController@register');
-   Route::post('login/driver','RegisterdriverController@login');
-   Route::middleware('auth:driver')->post('logout/driver','RegisterdriverController@logout');
+
 
    Route::group([
 
@@ -44,7 +41,7 @@ Route::post('drivers/{driver_id}/comments/store','CommentController@store');
 
     Route::group([ 'prefix' => 'admin', ], function ($router) {
         Route::post('register',[CustomAuthController::class,'register']);
-        Route::post('login',[CustomAuthController::class,'login']);
+        Route::post('login',[App\Http\Controllers\CustomAuthController::class,'login']);
         Route::post('logout',[CustomAuthController::class,'logout']);
 
 
@@ -54,13 +51,16 @@ Route::post('drivers/{driver_id}/comments/store','CommentController@store');
         Route::post('login',[RegisterController::class,'login']);
         Route::post('logout',[RegisterController::class,'logout']);
     });
+    Route::group([ 'prefix' => 'driver', ], function ($router) {
+        Route::post('login',[RegisterdriverController::class,'login']);
+        Route::post('logout',[RegisterdriverController::class,'logout']);
+
+
+    });
 
 });
 
-   // Route::post('register/driver/{admin_id}','RegisterdriverController@register');
 
-    Route::get('profile/{driver_id}','RegisterdriverController@getprofile');
-    Route::post('profile/update','RegisterdriverController@updateprofile');
 
     Route::group([
         'middleware' => 'App\Http\Middleware\Admin:admin-api',
@@ -69,7 +69,17 @@ Route::post('drivers/{driver_id}/comments/store','CommentController@store');
     ], function () {
 
 
-        Route::post('register',[RegisterdriverController::class,'register']);
+        Route::post('addDriver',[AdminAddedController::class,'addDriver']);
+
+    });
+    Route::group([
+        'middleware' => 'App\Http\Middleware\DriverAuth:driver-api',
+        'prefix' => 'just_driver',
+
+    ], function () {
+
+
+        Route::post('updatePro',[RegisterdriverController::class,'updatePro']);
 
     });
     Route::get('profile',function(){

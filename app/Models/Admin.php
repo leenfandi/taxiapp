@@ -15,7 +15,7 @@ class Admin extends Authenticatable implements JWTSubject
 {
     use HasApiTokens,HasFactory;
     protected $table ="admins";
-    
+
     protected $fillable = [
         'name',
         'email',
@@ -36,10 +36,10 @@ class Admin extends Authenticatable implements JWTSubject
       *
       * @return \Illuminate\Database\Eloquent\Relations\HasMany
       */
-     public function drivers(): HasMany
-     {
-         return $this->hasMany(Driver::class);
-     }
+    // public function drivers(): HasMany
+    // {
+     //   return $this->hasMany(Driver::class);
+    // }
 
 
 }
