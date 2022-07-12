@@ -87,8 +87,7 @@ class CustomAuthController extends Controller
          */
        public function logout()
         {
-            $token = $request->auth()->token();
-            $token->revoke();
+           Auth::guard('admin-api')->logout();
             return response()->json(['message'=>'thank you for using our app came back later']);
 
         }

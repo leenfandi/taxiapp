@@ -7,6 +7,8 @@ use App\Http\Controllers\CustomAuthController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\RegisterdriverController;
 use App\Http\Controllers\AdminAddedController;
+use App\Http\Controllers\AddTripController;
+use App\Http\Controllers\SearchController;
 
 /*
 |--------------------------------------------------------------------------
@@ -70,7 +72,11 @@ Route::post('drivers/{driver_id}/comments/store','CommentController@store');
 
 
         Route::post('addDriver',[AdminAddedController::class,'addDriver']);
-
+        Route::delete('delete/{id}',[AddTripController::class,'delete']);
+        Route::post('updatePro/{id}',[RegisterdriverController::class,'updatePro2']);
+        Route::delete('deletedriver/{id}',[RegisterdriverController::class,'delete']);
+        Route::get('getpro/{driver_id}', [RegisterdriverController::class,'getPro']);
+        Route::delete('delete/{id}',[AddTripController::class,'delete']);
     });
     Route::group([
         'middleware' => 'App\Http\Middleware\DriverAuth:driver-api',
@@ -80,13 +86,17 @@ Route::post('drivers/{driver_id}/comments/store','CommentController@store');
 
 
         Route::post('updatePro',[RegisterdriverController::class,'updatePro']);
-
+        Route::post('checkpin' , [RegisterdriverController::class , 'checkPin']);
     });
     Route::get('profile',function(){
         return 'unautheantic user ';
     })->name('login');
 
-   //Route::post('register/admin','CustomAuthController@register');
-  // Route::post('login/admin','CustomAuthController@login');
+    Route::middleware('auth:api')->group(function ()
+    {
+        Route::get('search/{paramiter}',[SearchController::class,'search']);
+        Route::get('getpro/{driver_id}', [RegisterdriverController::class,'getPro']);
+        Route::post('ordertrip' , [AddTripController::class , 'store']);
+    });
 
-//});
+

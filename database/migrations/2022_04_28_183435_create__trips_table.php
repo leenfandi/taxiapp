@@ -15,11 +15,16 @@ return new class extends Migration
     {
         Schema::create('_trips', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->integer('user_id');
-            $table->integer('driver_id');
-            $table->integer('distance');
-            $table->integer('price');
-
+            $table->unsignedInteger('user_id');
+            $table->unsignedBigInteger('driver_id');
+            $table->foreign('user_id') ->references('id') ->on('users') ->onDelete('cascade');
+            $table->foreign('driver_id')  ->references('id')  ->on('_drivers')  ->onDelete('cascade');
+            $table->time('start_time');
+            $table->time('end_time');
+            $table->string('first_location');
+            $table->string('end_location');
+            $table->string('note');
+            $table->integer('status')->default(0);
             $table->timestamps();
         });
     }

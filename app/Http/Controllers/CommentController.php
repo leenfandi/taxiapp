@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Models\Comment;
 use App\Models\Driver;
+use App\Models\User;
 use Dotenv\Validator;
 use Illuminate\Http\Request;
 

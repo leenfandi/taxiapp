@@ -63,7 +63,18 @@ class Driver extends Authenticatable implements JWTSubject
         return $this->hasMany(Comment::class);
     }
 
-  // public function admin(){
-     // return  $this->belongsTo(Admin::class,'admin_id');
-     //  }
+ /**
+  * Get all of the comments for the Driver
+  *
+  * @return \Illuminate\Database\Eloquent\Relations\HasMany
+  */
+ public function trips()
+ {
+     return $this->hasMany(Trip::class);
+ }
+ public function pins()
+ {
+     return $this->hasMany(Pin::class);
+ }
+
 }

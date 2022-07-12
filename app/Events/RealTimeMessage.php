@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use Carbon\Carbon;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -10,7 +11,8 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class RealTimeMessage implements ShouldBroadcast
+
+class NewNotification implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -19,10 +21,22 @@ class RealTimeMessage implements ShouldBroadcast
      *
      * @return void
      */
-    public $message;
-    public function __construct( $message)
+    public $name ;
+    public $from;
+    public  $to;
+    public $notes;
+    public $date;
+    public $time;
+
+
+    public function __construct($data)
     {
-            $this->message = $message;
+        $this->name = $data['username'];
+        $this->from = $data['from'];
+        $this->to = $data['to'];
+        $this->notes = $data['notes'];
+        $this->date = date("Y M d" , strtotime(Carbon::now()));
+        $this->time = date("h:i A" , strtotime(Carbon::now()));
     }
 
     /**
@@ -32,6 +46,11 @@ class RealTimeMessage implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new Channel('events');
+        return ['new-notification'];
     }
+
+    public function broadcastAs()
+  {
+      return 'new-notification';
+  }
 }
