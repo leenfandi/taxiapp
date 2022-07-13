@@ -9,6 +9,7 @@ use App\Http\Controllers\RegisterdriverController;
 use App\Http\Controllers\AdminAddedController;
 use App\Http\Controllers\AddTripController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\DriveractionsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -87,6 +88,9 @@ Route::post('drivers/{driver_id}/comments/store','CommentController@store');
 
         Route::post('updatePro',[RegisterdriverController::class,'updatePro']);
         Route::post('checkpin' , [RegisterdriverController::class , 'checkPin']);
+        Route::post('activate' , [DriveractionsController::class , 'activate']);
+        Route::post('accept' , [DriveractionsController::class , 'accepteOrder']);
+        Route::post('refusal' , [DriveractionsController::class , 'refusalOrder']);
     });
     Route::get('profile',function(){
         return 'unautheantic user ';
