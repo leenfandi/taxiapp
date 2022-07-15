@@ -27,6 +27,7 @@ class NewNotification implements ShouldBroadcast
     public $notes;
     public $date;
     public $time;
+    public $trip_id;
 
 
     public function __construct($data)
@@ -35,6 +36,7 @@ class NewNotification implements ShouldBroadcast
         $this->from = $data['from'];
         $this->to = $data['to'];
         $this->notes = $data['notes'];
+        $this->trip_id = $data['trip_id'];
         $this->date = date("Y M d" , strtotime(Carbon::now()));
         $this->time = date("h:i A" , strtotime(Carbon::now()));
     }

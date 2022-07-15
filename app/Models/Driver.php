@@ -28,7 +28,7 @@ class Driver extends Authenticatable implements JWTSubject
         'gender',
         'typeofcar',
         'number',
-      //  'admin_id',
+      
 
     ];
 

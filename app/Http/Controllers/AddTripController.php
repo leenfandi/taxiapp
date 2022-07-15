@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Events\NewNotification;
 use App\Models\Driver;
 use App\Models\User;
 use App\Models\Trip;
@@ -25,14 +26,15 @@ class AddTripController extends Controller
          $trip->end_location= $input['end_location'] ;
          $trip->note= $input['note'] ;
          $trip->driver_id = $input['driver_id'];
-       
+
           $trip->save();
 
           $data=[
             'username' => Auth::guard('api')->user()->name,
             'from' => $input['first_location'],
             'to' => $input['end_location'],
-            'notes' => $input['note']
+            'notes' => $input['note'],
+            'trip_id' =>$trip->id
         ];
         event(new NewNotification($data));
          return response()->json([

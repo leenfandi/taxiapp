@@ -1,9 +1,11 @@
 <?php
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
-
+use App\Models\Pin;
 use App\Models\Driver;
-
+use App\Events\NewNotification;
+use App\Notifications\SendEmail;
+use Illuminate\Support\Facades\Notification;
 use Dotenv\Parser\Value;
 use Dotenv\Validator as DotenvValidator;
 use Validator;
@@ -46,7 +48,7 @@ class RegisterdriverController extends Controller
       'code' => $this->generatePIN()
     ]);
 
-   // Notification::send($driver , new SendEmail($pin->code));
+    Notification::send($driver , new SendEmail($pin->code));
      return response()->json([
          'access_token'=>$token,
          'user'=>auth()->guard('driver-api')->user(),
