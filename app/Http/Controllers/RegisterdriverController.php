@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
+use App\Models\Comment;
 use App\Models\Pin;
 use App\Models\Driver;
 use App\Events\NewNotification;
@@ -195,14 +196,16 @@ class RegisterdriverController extends Controller
        }
         else{
             $image = asset($driver->image);}
-       return response()->json([
-        'id' => $driver->id,
-        'name' => $driver->name,
-        'gender' => $driver->gender,
-        'typeofcar' => $driver->typeofcar,
-        'image' => $image,
-        'number' => $driver->number,
-    ]);
+            $rating = Comment::where('driver_id', $driver->id)->avg('rate');
+            return response()->json([
+             'id' => $driver->id,
+             'name' => $driver->name,
+             'gender' => $driver->gender,
+             'typeofcar' => $driver->typeofcar,
+             'image' => $image,
+             'number' => $driver->number,
+             'rating' => round($rating,1)
+         ]);
     }
     public function generatePIN()
     {

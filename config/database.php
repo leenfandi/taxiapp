@@ -48,7 +48,7 @@ return [
             'url' => env('DATABASE_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '3306'),
-            'database' => 'taxi',
+            'database' => 'taxiapp',
             'username' => 'yumna',
             'password' => '123456789',
             'unix_socket' => env('DB_SOCKET', ''),

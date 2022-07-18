@@ -10,6 +10,7 @@ use App\Http\Controllers\AdminAddedController;
 use App\Http\Controllers\AddTripController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\DriveractionsController;
+use App\Http\Controllers\NearbyAreasController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,8 +31,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 
 
-Route::post('drivers/{driver_id}/comments/store','CommentController@store');
-    Route::get('drivers/{driver_id}/comments','CommentController@list');
 
 
 
@@ -98,9 +97,16 @@ Route::post('drivers/{driver_id}/comments/store','CommentController@store');
 
     Route::middleware('auth:api')->group(function ()
     {
-        Route::get('search/{paramiter}',[SearchController::class,'search']);
+        
         Route::get('getpro/{driver_id}', [RegisterdriverController::class,'getPro']);
         Route::post('ordertrip' , [AddTripController::class , 'store']);
+        Route::post('updatetrip' , [AddTripController::class , 'updatetrip']);
+        Route::post('getnearby' , [AddTripController::class , 'getDriverNearby']);
+        Route::post('drivers/{driver_id}/comments/store','CommentController@store');
+        Route::get('drivers/{driver_id}/comments','CommentController@list');
+        Route::get('autocomplete/{paramiter}' , [SearchController::class , 'autocomplete']);
+
+
     });
 
 

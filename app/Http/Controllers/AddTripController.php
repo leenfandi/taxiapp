@@ -60,5 +60,65 @@ public function delete( $id){
         }
 
 }
+public function updatetrip ( Request $request){
+    $input = $request->all();
+    $user_id= Auth::guard('api')->user()->id;
+    $trip =Trip::where( 'user_id',$user_id)->first();
+    $validator = validator($input, [
+
+        'end_location'=>'string',
+
+    ]);
+    if ($validator->fails()) {
+        return response()->json(['error'=>$validator->errors()]);
+    }
+
+
+    if($request->exists('end_location')){
+    $trip->end_location= $input['end_location'] ;
+    }
+    $trip->save();
+    return response()->json(['trip'=>$trip,'msg'=>'trip update succefully']);
+}
+public function getDriverNearby( Request $request){
+
+    $input = $request->all();
+     $validator = validator($input, [
+
+        'first_location'=>'required|string',
+
+    ]);
+    if ($validator->fails()) {
+        return response()->json(['error'=>$validator->errors()]);
+    }
+
+    $drivers = Driver::where('status' , 1)->where('address',$request->first_location)->get();
+        $response = [];
+        $i = 1;
+        foreach($drivers as $driver){
+            if ( is_null($driver->image) )
+            {
+             $image = 'null';
+            }
+             else{
+                 $image = asset($driver->image);
+                }
+
+            $response[$i] =
+                ['id' => $driver->id,
+            'name' => $driver->name,
+            'gender' => $driver->gender,
+            'typeofcar' => $driver->typeofcar,
+            'image' => $image ,
+            'number' => $driver->number,
+            'address' =>$driver->address];
+            $i++ ;
+        }
+            return response()->json([
+            'messege'=> 'Get Driver Nearby Succesfuly ',
+            'drivers' => $response
+
+    ]);
+}
 }
 

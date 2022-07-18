@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 use App\Models\Comment;
 use App\Models\Driver;
-use App\Models\User;
 use Dotenv\Validator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CommentController extends Controller
 {
@@ -41,6 +41,7 @@ class CommentController extends Controller
             $validator = validator($request->all(), [
 
                 'message' => 'required',
+                'rate' => 'required|numeric'
             ]);
         }
         if ($validator->fails()) {
@@ -51,16 +52,17 @@ class CommentController extends Controller
         }
         $comment = Comment::create([
             'message' => $request->message,
+            'rate' => $request->rate ,
             'driver_id' => $driver->id,
-            'user_id' => $request->user()->id,
-            //$addresses->customer_id = $customer_id;
+            'user_id' => Auth::guard('api')->id(),
+
         ]);
-        $comment->load('user');
+      
 
         return response()->json([
             'message'=>'comment added',
             'name'=>$comment->user->name,
-            'data'=>$comment['message'],
+            'data'=>$comment ,
 
         ],200);
 

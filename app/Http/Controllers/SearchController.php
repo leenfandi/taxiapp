@@ -8,10 +8,15 @@ use Illuminate\Support\Facades\Auth;
 
 class SearchController extends Controller
 {
-    public function search($paramiter)
-    {
 
-$region = Region::where('area',$paramiter)->get();
-return $region;
+public function autocomplete($paramiter){
+
+    $datas = Region::select("area")
+    ->where("area","LIKE","%{$paramiter}%")->get();
+return response()->json([
+    'messege'=> 'Get Area  Succesfuly ',
+    'Areas' => $datas,
+
+]);
 }
 }

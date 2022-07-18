@@ -15,7 +15,6 @@ return new class extends Migration
     {
         Schema::create('_drivers', function (Blueprint $table) {
             $table->bigIncrements('id');
-         //  $table->unsignedBigInteger('admin_id')->nullable();
             $table->string('name');
             $table->string('email');
             $table->string('password');
@@ -23,10 +22,8 @@ return new class extends Migration
             $table->string('typeofcar');
             $table->string('image');
             $table->integer('number');
-          //  $table->foreign('admin_id')
-            //->references('id')
-           // ->on('admins')
-           // ->onDelete('cascade');
+            $table->string('address')->nullable();
+            $table->integer('status')->default(0);
 
            $table->rememberToken();
             $table->timestamps();
