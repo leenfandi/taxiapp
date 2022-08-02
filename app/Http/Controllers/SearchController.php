@@ -1,7 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\user;
+use App\Models\User;
+use App\Models\Admin;
 use App\Models\Region;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,4 +20,7 @@ return response()->json([
 
 ]);
 }
+
+
 }
+

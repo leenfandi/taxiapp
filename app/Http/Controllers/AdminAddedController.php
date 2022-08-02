@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\models\Admin;
 Use App\Models\Driver;
+Use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
@@ -47,4 +48,15 @@ class AdminAddedController extends Controller
 
         ],201);
     }
+    public function getuser($user_id){
+        $user = User::select('id','name' , 'email')->where('id', $user_id)->first();
+
+             return response()->json([
+              'message' => 'User you needed is',
+              'user' => $user,
+
+
+          ]);
+        }
+
 }

@@ -31,15 +31,33 @@ class AddTripController extends Controller
 
           $data=[
             'username' => Auth::guard('api')->user()->name,
+            'number' => Auth::guard('api')->user()->number,
             'from' => $input['first_location'],
             'to' => $input['end_location'],
             'notes' => $input['note'],
             'trip_id' =>$trip->id
         ];
         event(new NewNotification($data));
-         return response()->json([
-                'messege'=> 'Trip store seccesfuly ',
-                'trip now is' =>$trip,
+
+        $Radius = 6371 ;
+    $deglat = deg2rad($request->lat2 - $request->lat1);
+    $deglong = deg2rad($request->long2 - $request->long1);
+    $a = sin($deglat/2) * sin($deglat/2) + cos(deg2rad($request->lat1))
+    * cos(deg2rad($request->lat2)) * sin($deglong/2) * sin($deglong/2);
+    $c = 2 *atan2(sqrt($a),sqrt(1-$a));
+    $dist = $Radius * $c ;
+
+    $price = $dist * 6300;
+
+    $time = $dist * 0.7 ;
+
+     return response()->json([
+            'messege'=> 'Trip store seccesfuly ',
+            'trip_id' => $trip->id ,
+            'distance'=>  round($dist,2) ,
+            'price' => round($price,-1) ,
+            'time' => round($time)
+
 
         ]);
 
@@ -61,12 +79,16 @@ public function delete( $id){
 
 }
 public function updatetrip ( Request $request){
-    $input = $request->all();
+     $input = $request->all();
     $user_id= Auth::guard('api')->user()->id;
-    $trip =Trip::where( 'user_id',$user_id)->first();
+    $trip =Trip::where( 'user_id',$user_id)->latest()->first();
     $validator = validator($input, [
 
         'end_location'=>'string',
+        'lat1' => 'numeric' ,
+        'long1' => 'numeric' ,
+        'lat2' => 'numeric' ,
+        'long2' => 'numeric'
 
     ]);
     if ($validator->fails()) {
@@ -78,7 +100,25 @@ public function updatetrip ( Request $request){
     $trip->end_location= $input['end_location'] ;
     }
     $trip->save();
-    return response()->json(['trip'=>$trip,'msg'=>'trip update succefully']);
+
+    $Radius = 6371 ;
+    $deglat = deg2rad($request->lat2 - $request->lat1);
+    $deglong = deg2rad($request->long2 - $request->long1);
+    $a = sin($deglat/2) * sin($deglat/2) + cos(deg2rad($request->lat1))
+    * cos(deg2rad($request->lat2)) * sin($deglong/2) * sin($deglong/2);
+    $c = 2 *atan2(sqrt($a),sqrt(1-$a));
+    $dist = $Radius * $c ;
+
+    $price = $dist * 6300;
+
+    $time = $dist * 0.7 ;
+    return response()->json([
+    'msg'=>'trip update succefully' ,
+    'trip_id' => $trip->id ,
+    'distance'=>  round($dist,2) ,
+    'price' => round($price,-1) ,
+    'time' => round($time)
+]);
 }
 public function getDriverNearby( Request $request){
 

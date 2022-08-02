@@ -234,5 +234,33 @@ class RegisterdriverController extends Controller
         else {
             return response()->json(['message'=>'check your PIN']);
         }
+
     }
+    public function getProdriver()
+    {
+        $driver_id = Auth::guard('driver-api')->id();
+       $driver = Driver::select('id','name' , 'gender' , 'typeofcar' , 'image' , 'number','address')->where('id',$driver_id)->first();
+       if (!$driver)
+       {
+        return response()->json(['message' => 'driver not found']);
+       }
+       if ( is_null($driver->image) )
+       {
+        $image = 'null';
+       }
+        else{
+            $image = asset($driver->image);}
+            $rating = Comment::where('driver_id', $driver->id)->avg('rate');
+            return response()->json([
+             'id' => $driver->id,
+             'name' => $driver->name,
+             'gender' => $driver->gender,
+             'typeofcar' => $driver->typeofcar,
+             'image' => $image,
+             'address' => $driver->address,
+             'number' => $driver->number,
+             'rating' => round($rating,1)
+
+         ]);
+        }
 }

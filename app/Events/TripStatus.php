@@ -2,7 +2,6 @@
 
 namespace App\Events;
 
-use Carbon\Carbon;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -11,8 +10,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-
-class NewNotification implements ShouldBroadcast
+class TripStatus implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -21,26 +19,17 @@ class NewNotification implements ShouldBroadcast
      *
      * @return void
      */
-    public $name ;
-    public $from;
-    public  $to;
-    public $notes;
-    public $date;
-    public $time;
-    public $number;
-    public $trip_id;
 
+    public $user_id;
+    public $trip_id;
+    public $trip_status;
 
     public function __construct($data)
     {
-        $this->name = $data['username'];
-        $this->from = $data['from'];
-        $this->to = $data['to'];
-        $this->notes = $data['notes'];
+        $this->user_id = $data['user_id'];
         $this->trip_id = $data['trip_id'];
-        $this->number = $data['number'];
-        $this->date = date("Y M d" , strtotime(Carbon::now()));
-        $this->time = date("h:i A" , strtotime(Carbon::now()));
+        $this->trip_status = $data['trip_status'];
+
     }
 
     /**
@@ -50,11 +39,11 @@ class NewNotification implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return  new PrivateChannel('driver'.$this->driver_id);
+        return  new PrivateChannel('user'.$this->user_id);
     }
 
     public function broadcastAs()
-  {
-      return 'new-notification';
-  }
+    {
+        return 'Trip-Status';
+    }
 }

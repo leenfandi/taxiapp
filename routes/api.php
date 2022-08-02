@@ -10,7 +10,7 @@ use App\Http\Controllers\AdminAddedController;
 use App\Http\Controllers\AddTripController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\DriveractionsController;
-use App\Http\Controllers\NearbyAreasController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -76,7 +76,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
         Route::post('updatePro/{id}',[RegisterdriverController::class,'updatePro2']);
         Route::delete('deletedriver/{id}',[RegisterdriverController::class,'delete']);
         Route::get('getpro/{driver_id}', [RegisterdriverController::class,'getPro']);
-        Route::delete('delete/{id}',[AddTripController::class,'delete']);
+        Route::get('getuser/{user_id}', [AdminAddedController::class,'getuser']);
     });
     Route::group([
         'middleware' => 'App\Http\Middleware\DriverAuth:driver-api',
@@ -90,6 +90,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
         Route::post('activate' , [DriveractionsController::class , 'activate']);
         Route::post('accept' , [DriveractionsController::class , 'accepteOrder']);
         Route::post('refusal' , [DriveractionsController::class , 'refusalOrder']);
+        Route::get('getprodriver', [RegisterdriverController::class,'getProdriver']);
     });
     Route::get('profile',function(){
         return 'unautheantic user ';
@@ -97,7 +98,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
     Route::middleware('auth:api')->group(function ()
     {
-        
+
         Route::get('getpro/{driver_id}', [RegisterdriverController::class,'getPro']);
         Route::post('ordertrip' , [AddTripController::class , 'store']);
         Route::post('updatetrip' , [AddTripController::class , 'updatetrip']);

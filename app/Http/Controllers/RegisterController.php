@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
@@ -24,6 +25,7 @@ class RegisterController extends Controller
             'name'=>'required',
             'email'=>'required|string|email|unique:users',
             'password'=>'required|min:8',
+            'number'=>'required|numeric',
 
         ]);
 

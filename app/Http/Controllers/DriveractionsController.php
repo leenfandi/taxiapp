@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Events\TripStatus;
 use App\Models\Driver;
 use App\Models\Trip;
 use Illuminate\Http\Request;
@@ -30,7 +30,7 @@ class DriveractionsController extends Controller
             $status = 1;
         }
 
-        //$values = array('status' => $status);
+
         Driver::where('id',$driver->id)->update(['status' => $status]);
 
         return response()->json(['msg'=>'driver update succefully']);
@@ -48,8 +48,20 @@ class DriveractionsController extends Controller
         }
 
         Trip::where('id' , $request->trip_id)->update(['status' => 1]);
+        $trip = Trip::where('id' , $request->trip_id)->first();
 
-        return response()->json(['msg'=>'Trip accepted']);
+
+        $data = [
+            'user_id' => $trip->user_id ,
+            'trip_id' => $request->trip_id ,
+            'trip_status' => $trip->status
+        ];
+        event(new TripStatus($data));
+
+        return response()->json([
+            'msg'=>'Trip accepted' ,
+            'trip_status' => $trip->status
+        ]);
     }
 
     public function refusalOrder(Request $request)
@@ -64,7 +76,20 @@ class DriveractionsController extends Controller
         }
 
         Trip::where('id' , $request->trip_id)->update(['status' => -1]);
+        $trip = Trip::where('id' , $request->trip_id)->first();
 
-        return response()->json(['msg'=>'Trip refusal']);
+        $data = [
+            'user_id' => $trip->user_id ,
+            'trip_id' => $request->trip_id ,
+            'trip_status' => $trip->status
+        ];
+        event(new TripStatus($data));
+        return response()->json([
+            'msg'=>'Trip refusal' ,
+            'trip_status' => $trip->status
+        ]);
     }
+
+
+
 }
