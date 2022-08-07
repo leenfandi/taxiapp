@@ -35,6 +35,7 @@ class AddTripController extends Controller
             'from' => $input['first_location'],
             'to' => $input['end_location'],
             'notes' => $input['note'],
+            'driver_id' =>$input['driver_id'],
             'trip_id' =>$trip->id
         ];
         event(new NewNotification($data));
@@ -159,6 +160,24 @@ public function getDriverNearby( Request $request){
             'drivers' => $response
 
     ]);
+}
+public function getDriverNearbyy( $first_location)
+{
+    $drivers = Driver::select('id','name' , 'gender' , 'typeofcar', 'image' ,'number', 'address')->
+    where('status' , 1)->where('address',$first_location)->get();
+
+        foreach($drivers as $driver){
+            if ( is_null($driver->image) )
+            {
+             $driver->image ='null';
+            }
+             else{
+                 $driver->image = asset($driver->image);
+                }
+        }
+            return response()->json(
+               $drivers
+    );
 }
 }
 

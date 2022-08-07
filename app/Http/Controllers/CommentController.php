@@ -40,7 +40,7 @@ class CommentController extends Controller
         if ($driver) {
             $validator = validator($request->all(), [
 
-                'message' => 'required',
+                'message' => 'nullable',
                 'rate' => 'required|numeric'
             ]);
         }
@@ -57,7 +57,7 @@ class CommentController extends Controller
             'user_id' => Auth::guard('api')->id(),
 
         ]);
-      
+        //$comment->load('user');
 
         return response()->json([
             'message'=>'comment added',

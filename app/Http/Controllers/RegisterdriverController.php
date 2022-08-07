@@ -45,9 +45,9 @@ class RegisterdriverController extends Controller
      $driver = Auth::guard('driver-api')->user();
      $driver_id = $driver->id;
     $pin = Pin::create([
-      'driver_id' => $driver_id ,
-      'code' => $this->generatePIN()
-    ]);
+     'driver_id' => $driver_id ,
+     'code' => $this->generatePIN()
+  ]);
 
     Notification::send($driver , new SendEmail($pin->code));
      return response()->json([

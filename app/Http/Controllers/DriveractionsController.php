@@ -89,7 +89,19 @@ class DriveractionsController extends Controller
             'trip_status' => $trip->status
         ]);
     }
+    public function updateadress(Request $request)
+    {
+        $driver_id = Auth::guard('driver-api')->id();
+        $driver = Driver::where('id' , $driver_id)->first();
+        $validator = Validator::make($request->all(),[
 
+            'address'=>'required',
+        ]);
+        $driver->address = $request->address ;
+        $driver->save();
+        return response()->json(['msg'=>'address updated succefully']);
+
+    }
 
 
 }

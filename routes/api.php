@@ -91,6 +91,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
         Route::post('accept' , [DriveractionsController::class , 'accepteOrder']);
         Route::post('refusal' , [DriveractionsController::class , 'refusalOrder']);
         Route::get('getprodriver', [RegisterdriverController::class,'getProdriver']);
+        Route::post('updateaddresss' , [DriveractionsController::class , 'updateadress']);
     });
     Route::get('profile',function(){
         return 'unautheantic user ';
@@ -103,6 +104,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
         Route::post('ordertrip' , [AddTripController::class , 'store']);
         Route::post('updatetrip' , [AddTripController::class , 'updatetrip']);
         Route::post('getnearby' , [AddTripController::class , 'getDriverNearby']);
+        Route::post('getnearbyy' , [AddTripController::class , 'getDriverNearbyy']);
         Route::post('drivers/{driver_id}/comments/store','CommentController@store');
         Route::get('drivers/{driver_id}/comments','CommentController@list');
         Route::get('autocomplete/{paramiter}' , [SearchController::class , 'autocomplete']);
