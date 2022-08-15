@@ -27,10 +27,11 @@ class RegisterdriverController extends Controller
 
     public function login(Request $request)
     {
-     $validator =Validator::make($request->all(),[
+     $validator = Validator::make($request->all(),[
 
          'email'=>'required|string|email',
          'password'=>'required|string|min:8',
+         'fcm_token' => 'required'
      ]);
      if ($validator->fails())
      {
@@ -42,14 +43,15 @@ class RegisterdriverController extends Controller
      {
        return response()->json(['error'=>'Unauthorized'],401);
      }
-     $driver = Auth::guard('driver-api')->user();
-     $driver_id = $driver->id;
-    $pin = Pin::create([
-     'driver_id' => $driver_id ,
-     'code' => $this->generatePIN()
-  ]);
+      $driver = Auth::guard('driver-api')->user();
+      $driver_id = $driver->id;
+     $pin = Pin::create([
+        'driver_id' => $driver_id ,
+        'code' => $this->generatePIN()
+     ]);
 
-    Notification::send($driver , new SendEmail($pin->code));
+    // Notification::send($driver , new SendEmail($pin->code));
+    $driver =Driver::where('email' , $request->email)->update(['fcm_token' => $request->fcm_token]);
      return response()->json([
          'access_token'=>$token,
          'user'=>auth()->guard('driver-api')->user(),
@@ -62,16 +64,16 @@ class RegisterdriverController extends Controller
     {
 
         $input = $request->all();
-        $id = $request->id;
-        $driver = Driver::where($id)->first();
+        $id = Auth::guard('driver-api')->id();
+        $driver = Driver::where('id',$id)->first();
         $validator = validator($input, [
             'name'=>'string',
             'email'=>'string|email|unique:_drivers',
             'password'=>'min:8',
-            'image'=>'nullable|image',
+            'image'=>'image',
             'gender'=>'string',
             'typeofcar'=>'string',
-            'number'=>'numeric',
+            'number'=>'string',
 
 
 
@@ -100,11 +102,19 @@ class RegisterdriverController extends Controller
         }
         if ($request->image && $request->image->isValid()){
 
-            $file_extension = $request->image->extension();
-            $file_name = time() . '.' . $file_extension;
-            $request->image->move(public_path('images/drivers'), $file_name);
-            $path = "public/images/drivers/$file_name";
-            $driver->image = $path;
+          //  $file_extension = $request->image->extension();
+           // $file_name = time() . '.' . $file_extension;
+            //$request->image->move(public_path('images/drivers'), $file_name);
+           // $path = "public/images/drivers/$file_name";
+           // $driver->image = $path;
+           // $path="null";
+
+            $photo=$request->image;
+
+        $photoname=time().'.jpg';
+        \Storage::disk('drivers')->put($photoname,base64_decode($photo));
+        $path="public/images/drivers/$photoname";
+        $driver->image = $path;
         }
 
         $driver->save();
@@ -177,7 +187,9 @@ class RegisterdriverController extends Controller
                 $file_name = time() . '.' . $file_extension;
                 $request->image->move(public_path('images/drivers'), $file_name);
                 $path = "public/images/drivers/$file_name";
+
                 $driver->image = $path;
+
             }
 
             $driver->save();
@@ -232,7 +244,7 @@ class RegisterdriverController extends Controller
 
         }
         else {
-            return response()->json(['message'=>'check your PIN']);
+            return response()->json(['message'=>'check your PIN'],401);
         }
 
     }
@@ -262,5 +274,30 @@ class RegisterdriverController extends Controller
              'rating' => round($rating,1)
 
          ]);
+        }
+        public function storeimage(Request $request){
+            $input = $request->all();
+            $driver_id= Auth::guard('driver-api')->id();
+            $driver=Driver::where('id',$driver_id)->first();
+            $validator = validator($input, [
+
+                'image'=>'image',
+
+            ]);
+            if ($validator->fails()) {
+                return response()->json(['error'=>$validator->errors()]);
+            }
+            if ($request->image && $request->image->isValid()){
+
+                $file_extension = $request->image->extension();
+                $file_name = time() . '.' . $file_extension;
+                $request->image->move(public_path('images/drivers'), $file_name);
+                $path = "public/images/drivers/$file_name";
+
+                $driver->image = $path;
+
+            }
+            $driver->save();
+            return response()->json(['driver'=>$driver,'msg'=>'driver stored image succefully']);
         }
 }

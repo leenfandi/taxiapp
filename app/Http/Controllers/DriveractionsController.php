@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 use App\Events\TripStatus;
 use App\Models\Driver;
+use App\Models\User;
 use App\Models\Trip;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 
 class DriveractionsController extends Controller
@@ -49,19 +51,21 @@ class DriveractionsController extends Controller
 
         Trip::where('id' , $request->trip_id)->update(['status' => 1]);
         $trip = Trip::where('id' , $request->trip_id)->first();
+        $user = User::where('id' , $trip->user_id)->first();
+        $server_key = env('FCM_SERVER_KEY');
+        $fcm = Http::acceptJson()->withToken($server_key)->post(
+            'https://fcm.googleapis.com/fcm/send' ,
+              [
+                'to' => $user->fcm_token ,
+                'notification' =>
+                [
+                    'title' => 'request accepted' ,
+                    'body' => 'Your request has been accepted'
+                ]
+              ]
+                );
 
-
-        $data = [
-            'user_id' => $trip->user_id ,
-            'trip_id' => $request->trip_id ,
-            'trip_status' => $trip->status
-        ];
-        event(new TripStatus($data));
-
-        return response()->json([
-            'msg'=>'Trip accepted' ,
-            'trip_status' => $trip->status
-        ]);
+        return json_decode($fcm);
     }
 
     public function refusalOrder(Request $request)
@@ -77,18 +81,24 @@ class DriveractionsController extends Controller
 
         Trip::where('id' , $request->trip_id)->update(['status' => -1]);
         $trip = Trip::where('id' , $request->trip_id)->first();
+        $user = User::where('id' , $trip->user_id)->first();
+        $server_key = env('FCM_SERVER_KEY');
+        $fcm = Http::acceptJson()->withToken($server_key)->post(
+            'https://fcm.googleapis.com/fcm/send' ,
+              [
+                'to' => $user->fcm_token ,
+                'notification' =>
+                [
+                    'title' => 'request refused' ,
+                    'body' => 'Sorry , Your request has been refused .
+                     please try again'
+                ]
+              ]
+                );
 
-        $data = [
-            'user_id' => $trip->user_id ,
-            'trip_id' => $request->trip_id ,
-            'trip_status' => $trip->status
-        ];
-        event(new TripStatus($data));
-        return response()->json([
-            'msg'=>'Trip refusal' ,
-            'trip_status' => $trip->status
-        ]);
+        return json_decode($fcm) ;
     }
+
     public function updateadress(Request $request)
     {
         $driver_id = Auth::guard('driver-api')->id();

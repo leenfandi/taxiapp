@@ -1,7 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Events\NewNotification;
+
+use App\Events\NewTrip;
 use App\Models\Driver;
 use App\Models\User;
 use App\Models\Trip;
@@ -10,37 +11,32 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\DB;
+use App\Models\Comment;
+use Illuminate\Support\Facades\Http;
 
 class AddTripController extends Controller
 {
-    public function store( Request $request){
-        $input = $request->all();
-        $trip = new Trip();
+public function store( Request $request){
+    $input = $request->all();
+    $trip = new Trip();
 
-        $user_id= Auth::guard('api')->user()->id;
-        $trip->user_id = $user_id;
-        $trip->start_time= $input['start_time'] ;
-         $trip->end_time= $input['end_time'];
-         $trip->first_location= $input['first_location'] ;
-         $trip->end_location= $input['end_location'] ;
-         $trip->note= $input['note'] ;
-         $trip->driver_id = $input['driver_id'];
+    $user_id= Auth::guard('api')->user()->id;
+    $trip->user_id = $user_id;
+     $trip->first_location= $input['first_location'] ;
+     $trip->start_time= $input['start_time'] ;
+     $trip->end_time= $input['end_time'] ;
+     $trip->lat1 = $input['lat1'];
+     $trip->long1 = $input['long1'];
+     $trip->end_location= $input['end_location'] ;
+     $trip->lat2 = $input['lat2'];
+     $trip->long2 = $input['long2'];
+     $trip->note= $input['note'] ;
+     $trip->driver_id = $input['driver_id'];
 
-          $trip->save();
+      $trip->save();
 
-          $data=[
-            'username' => Auth::guard('api')->user()->name,
-            'number' => Auth::guard('api')->user()->number,
-            'from' => $input['first_location'],
-            'to' => $input['end_location'],
-            'notes' => $input['note'],
-            'driver_id' =>$input['driver_id'],
-            'trip_id' =>$trip->id
-        ];
-        event(new NewNotification($data));
 
-        $Radius = 6371 ;
+    $Radius = 6371 ;
     $deglat = deg2rad($request->lat2 - $request->lat1);
     $deglong = deg2rad($request->long2 - $request->long1);
     $a = sin($deglat/2) * sin($deglat/2) + cos(deg2rad($request->lat1))
@@ -48,7 +44,7 @@ class AddTripController extends Controller
     $c = 2 *atan2(sqrt($a),sqrt(1-$a));
     $dist = $Radius * $c ;
 
-    $price = $dist * 6300;
+    $price = $dist * 3300;
 
     $time = $dist * 0.7 ;
 
@@ -60,34 +56,31 @@ class AddTripController extends Controller
             'time' => round($time)
 
 
-        ]);
+    ]);
 
-    }
+}
+
+
 public function delete( $id){
     $trip = Trip::find($id);
     $result = $trip->delete();
     if($result){
         return response()->json([
             'message'=>' A Trip Deleted Successfully'
-
         ],201);
      } else{
         return response()->json([
             'message'=>'Trip Not Deleted '
-
         ],400);
         }
-
 }
-public function updatetrip ( Request $request){
-     $input = $request->all();
+public function updatetrip (  Request $request){
+    $input = $request->all();
     $user_id= Auth::guard('api')->user()->id;
     $trip =Trip::where( 'user_id',$user_id)->latest()->first();
     $validator = validator($input, [
 
         'end_location'=>'string',
-        'lat1' => 'numeric' ,
-        'long1' => 'numeric' ,
         'lat2' => 'numeric' ,
         'long2' => 'numeric'
 
@@ -99,18 +92,20 @@ public function updatetrip ( Request $request){
 
     if($request->exists('end_location')){
     $trip->end_location= $input['end_location'] ;
+    $trip->lat2 = $input['lat2'];
+    $trip->long2 = $input['long2'];
     }
     $trip->save();
 
     $Radius = 6371 ;
-    $deglat = deg2rad($request->lat2 - $request->lat1);
-    $deglong = deg2rad($request->long2 - $request->long1);
-    $a = sin($deglat/2) * sin($deglat/2) + cos(deg2rad($request->lat1))
+    $deglat = deg2rad($request->lat2 - $trip->first_lat);
+    $deglong = deg2rad($request->long2 - $trip->first_long);
+    $a = sin($deglat/2) * sin($deglat/2) + cos(deg2rad($trip->first_lat))
     * cos(deg2rad($request->lat2)) * sin($deglong/2) * sin($deglong/2);
     $c = 2 *atan2(sqrt($a),sqrt(1-$a));
     $dist = $Radius * $c ;
 
-    $price = $dist * 6300;
+    $price = $dist * 3300;
 
     $time = $dist * 0.7 ;
     return response()->json([
@@ -121,6 +116,7 @@ public function updatetrip ( Request $request){
     'time' => round($time)
 ]);
 }
+
 public function getDriverNearby( Request $request){
 
     $input = $request->all();
@@ -161,23 +157,30 @@ public function getDriverNearby( Request $request){
 
     ]);
 }
-public function getDriverNearbyy( $first_location)
-{
-    $drivers = Driver::select('id','name' , 'gender' , 'typeofcar', 'image' ,'number', 'address')->
-    where('status' , 1)->where('address',$first_location)->get();
 
-        foreach($drivers as $driver){
-            if ( is_null($driver->image) )
-            {
-             $driver->image ='null';
-            }
-             else{
-                 $driver->image = asset($driver->image);
-                }
-        }
-            return response()->json(
-               $drivers
-    );
+public function confirmtrip()
+{
+    $user= Auth::guard('api')->user();
+    $trip =Trip::where( 'user_id',$user->id)->latest()->first();
+    $driver = Driver::where('id' , $trip->driver_id)->first();
+    $server_key = env('FCM_SERVER_KEY');
+    $fcm = Http::acceptJson()->withToken($server_key)->post(
+        'https://fcm.googleapis.com/fcm/send' ,
+          [
+            'to' => $driver->fcm_token ,
+            'notification' =>
+            [
+                'title' => 'New Trip' ,
+                'body' => $user->name . 'requested a trip from' . $trip->first_location .
+                'to' . $trip->end_location . ' , notes :' . $trip->note . ' , number : ' .
+                $user->number
+            ]
+          ]
+            );
+
+        return json_decode($fcm);
 }
+
 }
+
 

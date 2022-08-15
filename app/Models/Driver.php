@@ -30,6 +30,7 @@ class Driver extends Authenticatable implements JWTSubject
         'number',
         'address',
         'status',
+        'fcm_token',
 
 
     ];

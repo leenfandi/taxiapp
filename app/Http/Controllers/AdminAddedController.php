@@ -37,9 +37,21 @@ class AdminAddedController extends Controller
         {
             return response()->json($validator->errors()->toJson(),400);
         }
+        $path="null";
+        if($request->image){
+            $photo=$request->image;
+
+        $photoname=time().'.png';
+        \Storage::disk('drivers')->put($photoname,base64_decode($photo));
+        $path="public/images/drivers/$photoname";
+        }
+
+
         $user=Driver::create(array_merge(
             $validator->validated(),
-            ['password'=>bcrypt($request->password)]
+            ['password'=>bcrypt($request->password),
+            'image'=>$path
+            ]
         ));
         $credentials=$request->only(['email','password']);
         $token=auth()->guard('driver-api')->attempt($credentials);

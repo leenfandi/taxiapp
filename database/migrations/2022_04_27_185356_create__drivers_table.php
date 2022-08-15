@@ -21,9 +21,10 @@ return new class extends Migration
             $table->string('gender');
             $table->string('typeofcar');
             $table->string('image');
-            $table->integer('number');
+            $table->string('number');
             $table->string('address')->nullable();
             $table->integer('status')->default(0);
+            $table->text('fcm_token')->nullable();
 
            $table->rememberToken();
             $table->timestamps();

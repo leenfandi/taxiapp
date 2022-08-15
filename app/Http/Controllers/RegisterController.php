@@ -1,8 +1,8 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Events\NewNotification;
 use App\Models\User;
-use App\Models\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
@@ -25,7 +25,8 @@ class RegisterController extends Controller
             'name'=>'required',
             'email'=>'required|string|email|unique:users',
             'password'=>'required|min:8',
-            'number'=>'required|numeric',
+            'number' => 'required|numeric' ,
+            'fcm_token' => 'required'
 
         ]);
 
@@ -39,6 +40,7 @@ class RegisterController extends Controller
         ));
         $credentials=$request->only(['email','password']);
         $token=Auth::guard('api')->attempt($credentials);
+
         return response()->json([
             'message'=>'Register successfully',
             'acces_token'=>$token
@@ -53,6 +55,7 @@ class RegisterController extends Controller
 
          'email'=>'required|string|email',
          'password'=>'required|string|min:8',
+         'fcm_token' => 'required'
      ]);
      if ($validator->fails())
      {
@@ -64,7 +67,7 @@ class RegisterController extends Controller
      {
        return response()->json(['error'=>'Unauthorized'],401);
      }
-
+      User::where('email' , $request->email)->update(['fcm_token' => $request->fcm_token]);
      return response()->json([
          'access_token'=>$token,
          'user'=>Auth::guard('api')->user(),
@@ -87,10 +90,28 @@ class RegisterController extends Controller
      */
    public function logout()
     {
-        auth()->logout();
-
+        Auth::guard('api')->logout();
         return response()->json(['message' => 'Successfully logged out']);
     }
+
+    /**
+     * Refresh a token.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+   /* public function refresh()
+    {
+        return $this->respondWithToken(auth()->refresh());
+    }
+    /**
+     * Get the token array structure.
+     *
+     * @param  string $token
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+
 
 
 }

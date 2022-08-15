@@ -22,7 +22,11 @@ return new class extends Migration
             $table->time('start_time');
             $table->time('end_time');
             $table->string('first_location');
+            $table->double('lat1');
+            $table->double('long1');
             $table->string('end_location');
+            $table->double('lat2');
+            $table->double('long2');
             $table->string('note');
             $table->integer('status')->default(0);
             $table->timestamps();

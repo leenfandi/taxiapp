@@ -15,7 +15,11 @@ class Trip extends Model
         'start_time',
         'end_time',
         'first_location',
+        'lat1',
+        'long1',
         'end_location',
+        'lat2',
+        'long2',
         'note',
         'status',
     ];
